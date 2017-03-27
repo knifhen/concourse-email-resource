@@ -5,6 +5,8 @@ A [Concourse CI](http://concourse.ci) resource to send emails.
 ## Source Configuration
 
 * `from`: *Required*. The email address of the sender as a string.
+* `variable_start_string`: *Optional*. The jinja2 variable_start_string environment option. Default: `{{`
+* `variable_end_string`: *Optional*. The jinja2 variable_end_string environment option. Default: `}}`
 
 ### Example
 
@@ -59,15 +61,17 @@ be rendered into the template. Additionally to the variables from the `vars`-fil
 be used in the template (e.g.: ``BUILD_ID``). By default (if the MIME subtype is "html"), the CSS styles will be
 inlined to the HTML. If you don't want that, you can set the `inline_css` parameter to `False`.
 If you want to use jinja-template in `subject_text` or `body_text` you need to define the content as a multiline text, otherwise a syntax error will be reported for malformed yaml.
+Also note that the concourse variable substitution uses `{{}}` as tokens which conflicts with jinja2 template variable substitution. You will therefore need to change `variable_start_string`
+and `variable_end_string` in your resource definition, for example setting them to `{(` and `)}`.
 
 ``` yaml
 - put: send-email
   params:
     to: [recipient@example.com]
     subject_text: |
-      {% block BUILD_PIPELINE_NAME %}{% endblock %}:{% block BUILD_JOB_NAME %}{% endblock %} failed
+      {(BUILD_PIPELINE_NAME)}:{(BUILD_JOB_NAME)} failed
     body_text: |
-      {% block BUILD_PIPELINE_NAME %}{% endblock %}:{% block BUILD_JOB_NAME %}{% endblock %} failed
+      {(BUILD_PIPELINE_NAME)}:{(BUILD_JOB_NAME)} failed
 ```
 
 A more elaborate usage example would look like this:
